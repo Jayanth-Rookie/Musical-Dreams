@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Music Experience</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="particles-js"></div>
+    
+    <div class="container">
+        <h1 class="title">Musical Dreams</h1>
+
+        <div class="visualizer"></div>
+
+        <div class="keyboard">
+            <div class="key" data-note="C4">
+                <span>A</span>
+                <div class="note-name">C</div>
+            </div>
+            <div class="key" data-note="D4">
+                <span>S</span>
+                <div class="note-name">D</div>
+            </div>
+            <div class="key" data-note="E4">
+                <span>D</span>
+                <div class="note-name">E</div>
+            </div>
+            <div class="key" data-note="F4">
+                <span>F</span>
+                <div class="note-name">F</div>
+            </div>
+            <div class="key" data-note="G4">
+                <span>G</span>
+                <div class="note-name">G</div>
+            </div>
+            <div class="key" data-note="A4">
+                <span>H</span>
+                <div class="note-name">A</div>
+            </div>
+            <div class="key" data-note="B4">
+                <span>J</span>
+                <div class="note-name">B</div>
+            </div>
+            <div class="key" data-note="C5">
+                <span>K</span>
+                <div class="note-name">C</div>
+            </div>
+            <div class="key" data-note="D5">
+                <span>L</span>
+                <div class="note-name">D</div>
+            </div>
+        </div>
+
+        <p class="instruction">Play with your keyboard (A-L) or click/tap the keys!</p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <script>
+        // Initialize particles.js
+        particlesJS("particles-js", {
+            particles: {
+                number: {
+                    value: 100,
+                    density: {
+                        enable: true,
+                        value_area: 800
+                    }
+                },
+                color: {
+                    value: ["#e94560", "#0f3460", "#533483", "#ff7f50"]
+                },
+                shape: {
+                    type: "circle"
+                },
+                opacity: {
+                    value: 0.6,
+                    random: true,
+                    anim: {
+                        enable: true,
+                        speed: 1,
+                        opacity_min: 0.1,
+                        sync: false
+                    }
+                },
+                size: {
+                    value: 4,
+                    random: true,
+                    anim: {
+                        enable: true,
+                        speed: 4,
+                        size_min: 0.3,
+                        sync: false
+                    }
+                },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: "#e94560",
+                    opacity: 0.2,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 2,
+                    direction: "none",
+                    random: true,
+                    straight: false,
+                    out_mode: "bounce",
+                    bounce: true,
+                    attract: {
+                        enable: true,
+                        rotateX: 600,
+                        rotateY: 1200
+                    }
+                }
+            },
+            interactivity: {
+                detect_on: "canvas",
+                events: {
+                    onhover: {
+                        enable: true,
+                        mode: "repulse"
+                    },
+                    onclick: {
+                        enable: true,
+                        mode: "push"
+                    },
+                    resize: true
+                },
+                modes: {
+                    repulse: {
+                        distance: 100,
+                        duration: 0.4
+                    },
+                    push: {
+                        particles_nb: 4
+                    }
+                }
+            },
+            retina_detect: true
+        });
+
+        // Create visualizer
+        const visualizer = document.querySelector('.visualizer');
+        const BAR_COUNT = 32;
+        
+        for (let i = 0; i < BAR_COUNT; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'visualizer-bar';
+            bar.style.height = '2px';
+            visualizer.appendChild(bar);
+        }
+
+        // Audio setup
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Note frequencies
+        const NOTES = {
+            'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23,
+            'G4': 392.00, 'A4': 440.00, 'B4': 493.88, 'C5': 523.25, 'D5': 587.33
+        };
+
+        // Key mapping
+        const KEY_TO_NOTE = {
+            'A': 'C4', 'S': 'D4', 'D': 'E4', 'F': 'F4',
+            'G': 'G4', 'H': 'A4', 'J': 'B4', 'K': 'C5', 'L': 'D5'
+        };
+
+        function playNote(note) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(NOTES[note], audioContext.currentTime);
+            
+            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 1);
+
+            updateVisualizer();
+        }
+
+        function createMusicNote(key) {
+            const notes = ["🎵", "🎶", "♩", "♪", "♫", "♬"];
+            const note = document.createElement("div");
+            note.classList.add("note");
+            note.innerText = notes[Math.floor(Math.random() * notes.length)];
+            document.body.appendChild(note);
+
+            const rect = key.getBoundingClientRect();
+            note.style.left = `${rect.left + rect.width / 2}px`;
+            note.style.top = `${rect.top}px`;
+
+            gsap.to(note, {
+                y: "-200px",
+                x: Math.random() * 100 - 50,
+                rotation: Math.random() * 360,
+                opacity: 0,
+                duration: 1.5,
+                ease: "power1.out",
+                onComplete: () => note.remove()
+            });
+        }
+
+        function updateVisualizer() {
+            const bars = document.querySelectorAll('.visualizer-bar');
+            bars.forEach(bar => {
+                const height = Math.random() * 50 + 10;
+                bar.style.height = `${height}px`;
+            });
+        }
+
+        function handleKeyPress(key) {
+            const keyElement = key instanceof Element ? key : document.querySelector(`.key[data-note="${KEY_TO_NOTE[key]}"]`);
+            if (!keyElement) return;
+
+            const note = keyElement.getAttribute('data-note');
+            if (note) {
+                keyElement.classList.add('playing');
+                playNote(note);
+                createMusicNote(keyElement);
+            }
+        }
+
+        // Event Listeners
+        window.addEventListener('keydown', (e) => {
+            const key = e.key.toUpperCase();
+            if (KEY_TO_NOTE[key]) {
+                handleKeyPress(key);
+            }
+        });
+
+        document.querySelectorAll('.key').forEach(key => {
+            key.addEventListener('click', () => handleKeyPress(key));
+            key.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                handleKeyPress(key);
+            });
+            key.addEventListener('transitionend', e => {
+                if (e.propertyName === 'transform') {
+                    key.classList.remove('playing');
+                }
+            });
+        });
+
+        // Start visualizer animation
+        setInterval(() => {
+            const bars = document.querySelectorAll('.visualizer-bar');
+            bars.forEach(bar => {
+                const currentHeight = parseInt(bar.style.height);
+                if (currentHeight > 2) {
+                    bar.style.height = `${Math.max(2, currentHeight - 2)}px`;
+                }
+            });
+        }, 50);
+
+        // Handle audio context on user interaction
+        document.addEventListener('click', () => {
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+        });
+    </script>
+</body>
+</html>
