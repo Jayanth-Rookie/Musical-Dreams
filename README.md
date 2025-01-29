@@ -16,7 +16,7 @@ A fun and interactive web application that allows users to create music by typin
 
 ## 🖥️ Demo
 
-[Live Demo](https://jayanth-rookie.github.io/Music-Player/)
+[Live Demo](https://jayanth-rookie.github.io/Musical-Dreams/)
 
 ---
 
